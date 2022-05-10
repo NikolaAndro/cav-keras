@@ -136,7 +136,9 @@ class TCAV(object):
         reshaped_labels = np.array(y_train).reshape((x_train.shape[0], 1))
         tf_y_labels = tf.convert_to_tensor(reshaped_labels, dtype=np.float32)
         loss = k.binary_crossentropy(tf_y_labels, self.model_h.output)
-        grad = k.gradients(loss, self.model_h.input)
+        with tf.GradientTape() as tape:
+            tape.watch(self.model_h.input)
+        grad = tape.gradient(loss, self.model_h.input)
         gradient_func = k.function([self.model_h.input], grad)
         calc_grad = gradient_func([model_f_activations])[0]
         sensitivity = np.dot(calc_grad, self.cav)
